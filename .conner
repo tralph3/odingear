@@ -1,0 +1,4 @@
+;;; -*- lisp-data -*-
+((:name "Compile and run"
+        :command "odin run src"
+        :type "compile"))
