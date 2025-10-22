@@ -15,7 +15,7 @@ Player :: struct {
 
 main :: proc () {
     rl.InitWindow(800, 600, "Metal Gear")
-    rl.SetTargetFPS(144)
+    rl.SetTargetFPS(60)
 
     spall_ctx = spall.context_create("trace_test.spall")
 	defer spall.context_destroy(&spall_ctx)
@@ -42,6 +42,11 @@ main :: proc () {
         pos = { f32(world.starting_pos.x), f32(world.starting_pos.y) }
     }
 
+    enemy := Enemy {
+        speed = 0.15,
+        pos = { 3, 3 }
+    }
+
     camera := rl.Camera2D {
         zoom = 1
     }
@@ -50,7 +55,10 @@ main :: proc () {
     start_path := [2]i32{ 0, 0 }
     end_path := [2]i32{ 0, 0 }
 
+    frame_counter: i32
+
     for !rl.WindowShouldClose() {
+        frame_counter += 1
         camera.offset = {f32(rl.GetRenderWidth()) / 2.0, f32(rl.GetRenderHeight()) / 2.0}
 
         if rl.IsMouseButtonPressed(.LEFT) || rl.IsMouseButtonPressed(.RIGHT) {
@@ -92,25 +100,28 @@ main :: proc () {
         }
         camera.target = player.pos * f32(world.tile_size)
 
-        before := time.now()
-        path := astar_find_path(world, start_path, end_path, context.temp_allocator)
-        after := time.now()
-        fmt.println(f32(after._nsec - before._nsec) / 1000 / 1000)
-
+        // before := time.now()
+        // path := astar_find_path(world, start_path, end_path, context.temp_allocator)
+        // after := time.now()
+        // fmt.println(f32(after._nsec - before._nsec) / 1000 / 1000)
+        
         rl.BeginDrawing()
 
         rl.BeginMode2D(camera)
-
+        
         rl.ClearBackground(rl.BLACK)
 
         rl.DrawRectangle(0,0, world.width * world.tile_size, world.width * world.tile_size, rl.GRAY)
         draw_world(world)
-
+        enemy_move_to_target(&enemy, {i32(player.pos.x), i32(player.pos.y)}, world)
+        
+        
         rl.DrawRectangle(i32(player.pos.x * f32(world.tile_size)), i32(player.pos.y * f32(world.tile_size)), player.size, player.size, rl.RED)
-
-        for tile in path {
-            rl.DrawRectangle(i32(tile.x * world.tile_size), i32(tile.y * world.tile_size), world.tile_size, world.tile_size, rl.PURPLE)
-        }
+        rl.DrawRectangle(i32(enemy.pos.x * f32(world.tile_size)), i32(enemy.pos.y * f32(world.tile_size)), 10, 10, rl.MAGENTA)
+        
+        // for tile in path {
+        //     rl.DrawRectangle(i32(tile.x * world.tile_size), i32(tile.y * world.tile_size), world.tile_size, world.tile_size, rl.PURPLE)
+        // }
 
         rl.EndMode2D()
 

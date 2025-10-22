@@ -11,6 +11,9 @@ Node :: struct {
 }
 
 astar_find_path :: proc (world: World, start, end: [2]i32, allocator:=context.allocator) -> [][2]i32 {
+    if world_get_tile(world, start).type == .INVALID || world_get_tile(world, end).type == .INVALID {
+        return {}
+    }
     open_map: map[[2]i32]Node
     closed_map: map[[2]i32]Node
 
@@ -98,10 +101,10 @@ reconstruct_path :: proc (closed_map: map[[2]i32]Node, end_pos: [2]i32, allocato
     append(&path, end_pos)
 
     for {
-        append(&path, node.parent)
         if node.parent == { -1, -1 } {
             break
         }
+        append(&path, node.parent)
         node = closed_map[node.parent]
     }
 
